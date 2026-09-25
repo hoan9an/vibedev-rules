@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//~/.vibedev/rules/**)",
+      "Bash(python3 ~/.claude/skills/**)",
+      "Bash(python3 ~/.vibedev/rules/agskills/**)"
+    ],
+    "additionalDirectories": [
+      "~/.vibedev/rules"
+    ]
+  },
+  "skillOverrides": {
+    "viberule": "on",
+    "vibehelp": "name-only"
+  }
+}

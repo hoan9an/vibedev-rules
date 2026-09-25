@@ -1,0 +1,49 @@
+{
+  "name": "vibedev-rules",
+  "version": "3.0.0",
+  "description": "VibeSoft's shared rule corpus + Agent Skills for Claude Code, Gemini/Antigravity, Codex and Grok — install and update with one command.",
+  "keywords": [
+    "claude-code",
+    "agent-skills",
+    "gemini",
+    "antigravity",
+    "codex",
+    "grok",
+    "ai-rules",
+    "coding-standards",
+    "installer",
+    "vibedev-rules"
+  ],
+  "homepage": "https://github.com/hoan9an/vibedev-rules#readme",
+  "bugs": {
+    "url": "https://github.com/hoan9an/vibedev-rules/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoan9an/vibedev-rules.git"
+  },
+  "license": "MIT",
+  "author": "VibeSoft (https://github.com/hoan9an)",
+  "bin": {
+    "vibedev-rules": "install.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "sync-version": "node scripts/sync-version.mjs",
+    "check-version": "node scripts/sync-version.mjs --check",
+    "check-brand": "node scripts/check-brand.mjs",
+    "prepack": "node scripts/sync-version.mjs && node scripts/check-brand.mjs && node scripts/clean-artifacts.mjs"
+  },
+  "files": [
+    "install.mjs",
+    "install.sh",
+    "install.ps1",
+    "payload/",
+    "skills/",
+    "claude/",
+    "docs/ref/macos-codesign-tcc.md",
+    "CHANGELOG.md"
+  ]
+}

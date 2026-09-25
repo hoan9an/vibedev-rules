@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+
+# Local/editor state
+.vscode/
+.idea/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Large reference corpus is intentionally not part of the default package
+ref-ECC/
+**/ref-ECC/
+
+# Local install/test output
+.local-test/
+
+# Disposable visual export from /vibehtmlreport skill — regenerated each run, not a doc source of truth
+REPORT.html
+
+.vibedev-rules/
+Icon?
+.DS_Store
+
+# Postman GUI workspace scaffolding (auto-generated when Postman opens this folder)
+.postman/
+postman/
