@@ -19,7 +19,8 @@ These are load-bearing for the consumer — treat them as a public API, not inte
 | **Install root** | `~/.vibedev/rules/` | The corpus installs here; bridge reads it here. |
 | **`.version` stamp** | `~/.vibedev/rules/.version` | Written every install by `install.mjs`, one `key=value` per line. **The `version=<semver>` line must stay** (alongside `installed=`, `commit=`, `branch=`). Bridge parses `version=`. |
 | **`install.sh` on `master`** | `raw.githubusercontent.com/hoan9an/vibedev-rules/master/install.sh` | The bootstrap launcher stays reachable, unauthenticated, on the `master` branch. |
-| **`@import` layout** | `~/.claude/CLAUDE.md` | Core corpus files are `@`-imported (mechanical load at session start); bridge relies on that layout, not on the model choosing to route them. |
+| **Claude profile dir** | `~/.vibedev/profiles/claude/` | **Isolated profile (v3.0.0+):** agent config no longer lands in `~/.claude`. Bridge reads the effective Claude context — `CLAUDE.md` and `skills/viberule/SKILL.md` — from here. Launched via `CLAUDE_CONFIG_DIR`. |
+| **`@import` layout** | `~/.vibedev/profiles/claude/CLAUDE.md` | Core corpus files are `@`-imported (mechanical load at session start); bridge relies on that layout, not on the model choosing to route them. |
 | **Tool / package name** | `vibedev-rules` | The npm package and tool name bridge references. |
 
 ## Change policy — change both repos in the same commit
@@ -32,7 +33,8 @@ lockstep, and update this doc plus `CLAUDE.md`:
 - renaming or moving the `.version` file, or changing the `version=` line format;
 - renaming the `master` branch (breaks the raw `install.sh` URL and the update hook's changelog fetch);
 - renaming the tool / npm package (`vibedev-rules`);
-- moving the install root (`~/.vibedev/rules`) or dropping the `@import` layout.
+- moving the install root (`~/.vibedev/rules`) or dropping the `@import` layout;
+- moving the isolated Claude profile (`~/.vibedev/profiles/claude`) — bridge reads the effective Claude context (`CLAUDE.md`, `skills/viberule/SKILL.md`) from there, not from `~/.claude`.
 
 An invariant change that ships without the matching bridge update is a broken contract, not an
 improvement.

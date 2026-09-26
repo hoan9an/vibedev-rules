@@ -10,8 +10,8 @@ or copied from here: edit here first, then let the installer propagate.
 | Path | Role | Ships to |
 |------|------|----------|
 | `payload/` | The rule corpus (`RULE-*.md`, `METHOD-*.md`, `index.md`, `GEMINI.md` template) | `~/.vibedev/rules` |
-| `skills/` | Shared Agent Skills — the `SKILL.md` open standard, deployed unmodified | `~/.claude/skills/`, `~/.gemini/config/skills/`, `~/.agents/skills/` (Codex), `~/.grok/skills/` (Grok) |
-| `claude/` | Claude Code-only runtime assets: `CLAUDE.md` template, `agents/`, hooks, settings fragment | `~/.claude/` |
+| `skills/` | Shared Agent Skills — the `SKILL.md` open standard, deployed unmodified | isolated profiles under `~/.vibedev/profiles/{claude,gemini,codex,grok}` (never the base `~/.claude` etc.) |
+| `claude/` | Claude Code-only runtime assets: `CLAUDE.md` template, `agents/`, hooks, settings fragment | `~/.vibedev/profiles/claude/` (launch via `vibe-claude` / `CLAUDE_CONFIG_DIR`) |
 | `docs/` | Repo-internal only — architecture, decision records, references | *not installed* |
 | `install.mjs` | The installer, and the SSOT for install behavior (`install.sh`/`.ps1` are thin `node` launchers) | — |
 

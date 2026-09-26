@@ -65,15 +65,19 @@ and only used to *run* the `vibeflow` helper scripts at runtime — never to ins
 
 ## Where it lands
 
+Installs into **isolated profiles** under `~/.vibedev/`, so your real `~/.claude`, `~/.gemini`,
+`~/.codex` and `~/.grok` are never touched:
+
 | # | Target | What arrives |
 |---|--------|--------------|
-| 1 | `~/.vibedev/rules/` | The rule corpus (`payload/*`) plus `.source-repo` / `.version` stamp files |
-| 2 | `~/.claude/` | Packaged `CLAUDE.md` (timestamped backup first), 9 skills in `skills/`, 5 agents in `agents/` (copied per file — your own agents are kept), permission + skill-override merges into `settings.json`, and 2 SessionStart update-check hooks |
-| 3 | `~/.gemini/` | `GEMINI.md` overrides (version-stamped), 18 native rule files with YAML triggers under `config/rules/`, 9 skills under `config/skills/`, `config/skills.json`, permission merges |
-| 4–5 | `~/.agents/skills/`, `~/.grok/skills/` | Codex CLI and Grok CLI skill roots — the shared skill corpus, synced per folder (skills only, no rule corpus) |
+| 1 | `~/.vibedev/rules/` | The shared corpus (`payload/*`) plus `.source-repo` / `.version` stamp files — the one dir every consumer reads |
+| 2 | `~/.vibedev/profiles/claude/` | Isolated Claude profile: `CLAUDE.md`, 9 skills, 5 agents, `settings.json` merges, 2 SessionStart hooks. Launch with `vibe-claude` (sets `CLAUDE_CONFIG_DIR`). |
+| 3 | `~/.vibedev/profiles/codex/`, `~/.vibedev/profiles/grok/` | Isolated Codex/Grok profiles — the shared skill corpus under each profile's `skills/`. Launch with `vibe-codex` / `vibe-grok` (set `CODEX_HOME` / `GROK_HOME`). |
+| 4 | `~/.vibedev/profiles/gemini/.gemini/` | Staged Gemini/Antigravity profile — `GEMINI.md` overrides, native rule files, skills, `skills.json`. Gemini has no config-dir env var, so run `vibe-gemini-init` inside a project to scaffold its `.gemini/`. |
 
-Every sync is scoped to managed names only. Skills and agents you already had outside the
-managed set are never touched — there is no blanket directory wipe.
+The installer writes launchers to `~/.vibedev/bin/` — add it to `PATH`. Isolated profiles carry
+their **own auth**, so the first launch of each asks you to log in. Every sync is scoped to
+managed names only; there is no blanket directory wipe.
 
 ---
 
@@ -82,7 +86,7 @@ managed set are never touched — there is no blanket directory wipe.
 Two mechanisms, by design:
 
 - **Always-on core.** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and
-  `RULE-pattern-core.md` are `@`-imported by the installed `~/.claude/CLAUDE.md`, so the
+  `RULE-pattern-core.md` are `@`-imported by the installed `~/.vibedev/profiles/claude/CLAUDE.md`, so the
   harness loads them mechanically at session start — no model decision involved.
 - **On demand.** Everything else is pulled in by the `viberule` router only when a task's
   signals match, which keeps the always-resident context small.

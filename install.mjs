@@ -10,6 +10,7 @@ import {
   copyFileSync,
   rmSync,
   renameSync,
+  chmodSync,
 } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname, basename, extname, relative, isAbsolute, sep } from "node:path";
@@ -37,13 +38,23 @@ const HOME = homedir();
 const INSTALL_ROOT = join(HOME, ".vibedev", "rules");
 
 const LEGACY_INSTALL_ROOT = join(HOME, ".vibedev", "claudedoc");
-const CLAUDE_DIR = join(HOME, ".claude");
-const GEMINI_DIR = join(HOME, ".gemini");
+// Isolated profiles: install into ~/.vibedev/profiles/<agent> so the agents' real
+// config dirs (~/.claude, ~/.gemini, ~/.codex, ~/.grok) stay untouched. Each agent is
+// launched via its config-dir env var (CLAUDE_CONFIG_DIR / CODEX_HOME / GROK_HOME);
+// Gemini/Antigravity has no such var, so its assets are staged for per-project `.gemini/`
+// (see the generated `vibe-gemini` launcher). Launchers land under ~/.vibedev/bin.
+const PROFILE_ROOT = join(HOME, ".vibedev", "profiles");
+const CLAUDE_DIR = join(PROFILE_ROOT, "claude");
+const CLAUDE_SKILLS_TILDE = "~/.vibedev/profiles/claude/skills";
+const CODEX_HOME = join(PROFILE_ROOT, "codex");
+const GROK_HOME = join(PROFILE_ROOT, "grok");
+const GEMINI_HOME = join(PROFILE_ROOT, "gemini");
+const GEMINI_DIR = join(GEMINI_HOME, ".gemini");
 const GEMINI_RULES_DIR = join(GEMINI_DIR, "config", "rules");
 const GEMINI_SKILLS_DIR = join(GEMINI_DIR, "config", "skills");
 
-const CODEX_SKILLS_DIR = join(HOME, ".agents", "skills");
-const GROK_SKILLS_DIR = join(HOME, ".grok", "skills");
+const CODEX_SKILLS_DIR = join(CODEX_HOME, "skills");
+const GROK_SKILLS_DIR = join(GROK_HOME, "skills");
 
 const OLD_SKILLS = [];
 
@@ -412,10 +423,11 @@ function mergeSettings(settingsPath, installRoot, claudeDir) {
 
   const legacyBashRules = [
     "Bash(python3 ~/.claude/skills/**)",
+    "Bash(python3 ~/.claude/skills/*)",
     "Bash(python3 ~/.vibedev/rules/agskills/**)",
   ];
   const managedBashRules = [
-    "Bash(python3 ~/.claude/skills/*)",
+    `Bash(python3 ${CLAUDE_SKILLS_TILDE}/*)`,
     "Bash(python3 ~/.vibedev/rules/agskills/*)",
   ];
   perms.allow = perms.allow.filter((x) => !legacyBashRules.includes(x));
@@ -463,7 +475,7 @@ function mergeSettings(settingsPath, installRoot, claudeDir) {
 // ---------------------------------------------------------------------------
 
 function mergeAntigravityPermissions() {
-  if (!isDir(GEMINI_DIR)) return;
+  if (!isDir(join(HOME, ".gemini"))) return;
 
   const scriptsDir = join(REPO_ROOT, "skills", "vibeflow", "scripts");
   const skillScripts = listDir(scriptsDir)
@@ -669,7 +681,7 @@ async function inspectStatus() {
       const allow = (data.permissions && data.permissions.allow) || [];
       if (allow.includes(readRule)) console.log("  \u2705 Claude Code: Read permission for payload already granted.");
       else console.log("  \u26a0\ufe0f  Claude Code: Read permission MISSING. Will be added automatically.");
-      if (allow.includes("Bash(python3 ~/.claude/skills/*)")) console.log("  \u2705 Claude Code: Skill scripts Bash execution permission already granted.");
+      if (allow.includes("Bash(python3 ~/.vibedev/profiles/claude/skills/*)")) console.log("  \u2705 Claude Code: Skill scripts Bash execution permission already granted.");
       else console.log("  \u26a0\ufe0f  Claude Code: Skill scripts Bash execution permission will be added.");
       const overrides = data.skillOverrides || {};
       if (overrides.viberule === "on") console.log("  \u2705 Claude Code: viberule skill is already enabled (on).");
@@ -681,7 +693,7 @@ async function inspectStatus() {
     console.log("  \u26a0\ufe0f  Claude Code: No settings.json yet. Will be CREATED.");
   }
 
-  if (isDir(GEMINI_DIR)) {
+  if (isDir(join(HOME, ".gemini"))) {
     const agSettings = join(GEMINI_DIR, "antigravity-cli", "settings.json");
     if (isFile(agSettings)) {
       try {
@@ -700,6 +712,53 @@ async function inspectStatus() {
 
   console.log(cyanBold("===================================================="));
   return sameCheckout;
+}
+
+// ---------------------------------------------------------------------------
+// launchers — thin wrappers that point each CLI at its isolated vibedev profile
+// ---------------------------------------------------------------------------
+
+function writeLaunchers() {
+  const binDir = join(HOME, ".vibedev", "bin");
+  mkdirSync(binDir, { recursive: true });
+  const wrappers = [
+    ["vibe-claude", "CLAUDE_CONFIG_DIR", CLAUDE_DIR, "claude"],
+    ["vibe-codex", "CODEX_HOME", CODEX_HOME, "codex"],
+    ["vibe-grok", "GROK_HOME", GROK_HOME, "grok"],
+  ];
+  const written = [];
+  for (const [name, envVar, dir, bin] of wrappers) {
+    if (IS_WIN) {
+      const p = join(binDir, `${name}.cmd`);
+      writeFileSync(p, `@echo off\r\nset "${envVar}=${dir}"\r\n"${bin}" %*\r\n`);
+      written.push(`${name}.cmd`);
+    } else {
+      const p = join(binDir, name);
+      writeFileSync(p, `#!/usr/bin/env bash\nexport ${envVar}="${dir}"\nexec ${bin} "$@"\n`);
+      try {
+        chmodSync(p, 0o755);
+      } catch {}
+      written.push(name);
+    }
+  }
+  // Gemini/Antigravity has no config-dir env var: scaffold the staged profile into a project's ./.gemini
+  if (IS_WIN) {
+    const p = join(binDir, "vibe-gemini-init.cmd");
+    writeFileSync(p, `@echo off\r\nif not exist ".gemini" mkdir ".gemini"\r\nxcopy /E /I /Y "${GEMINI_DIR}" ".gemini\\" >nul\r\necho Scaffolded .gemini/ from the vibedev profile.\r\n`);
+    written.push("vibe-gemini-init.cmd");
+  } else {
+    const p = join(binDir, "vibe-gemini-init");
+    writeFileSync(p, `#!/usr/bin/env bash\nmkdir -p .gemini\ncp -R "${GEMINI_DIR}/." .gemini/\necho "Scaffolded .gemini/ from the vibedev profile (base ~/.gemini untouched)."\n`);
+    try {
+      chmodSync(p, 0o755);
+    } catch {}
+    written.push("vibe-gemini-init");
+  }
+  console.log();
+  console.log(cyanBold("Launchers (base agent profiles stay untouched):"));
+  console.log(`  \ud83d\ude80 ${binDir}  \u2192  ${written.join(", ")}`);
+  console.log(`  Add ${binDir} to PATH, then run \`vibe-claude\` / \`vibe-codex\` / \`vibe-grok\`; run \`vibe-gemini-init\` inside a project to scaffold its .gemini/.`);
+  return written;
 }
 
 // ---------------------------------------------------------------------------
@@ -758,7 +817,7 @@ function printSummary() {
 
   console.log();
   console.log(cyanBold("Permissions configured:"));
-  console.log("  \u2699\ufe0f  Claude Code     : Read(~/.vibedev/rules/**), Bash(python3 ~/.claude/skills/*)");
+  console.log("  \u2699\ufe0f  Claude Code     : Read(~/.vibedev/rules/**), Bash(python3 ~/.vibedev/profiles/claude/skills/*)");
   if (isDir(GEMINI_DIR))
     console.log("  \u2699\ufe0f  Antigravity     : per-script command() rules (vibeflow scripts \u00d72 roots \u00d72 path renderings \u00d7the platform's python launchers), write_file(~/.vibedev/agent-council/), read_file(~/.vibedev/rules/)");
 
@@ -894,7 +953,7 @@ async function runInstall() {
     `1. Edit in the **source repo**: \`${join(REPO_ROOT, "payload")}/\`\n` +
     `2. Run \`${propagateCmd}\` to propagate.\n\n` +
     `**NEVER edit files under \`${INSTALL_ROOT}\` directly** \u2014 changes will be silently lost on the next install.\n\n` +
-    "@~/.claude/CLAUDE.local.md\n";
+    "@~/.vibedev/profiles/claude/CLAUDE.local.md\n";
   writeTextLf(join(CLAUDE_DIR, "CLAUDE.md"), claudeMdSrc + ruleSourceBlock);
 
   // --- 6. CLAUDE.local.md (create-only) ---
@@ -909,8 +968,9 @@ async function runInstall() {
     console.log(`\ud83d\udcdd Created ${localMd} (machine-local template)`);
   }
 
-  // --- 7. GEMINI.md (only when ~/.gemini exists) ---
-  if (isDir(GEMINI_DIR)) {
+  // --- 7. GEMINI.md (staged to the isolated profile; only when the user actually has Gemini) ---
+  if (isDir(join(HOME, ".gemini"))) {
+    mkdirSync(GEMINI_DIR, { recursive: true });
     const geminiFile = join(GEMINI_DIR, "GEMINI.md");
     const geminiLocal = join(GEMINI_DIR, "GEMINI.local.md");
     const geminiMarker = "[VIBERULE-AG-OVERRIDES-";
@@ -952,7 +1012,7 @@ async function runInstall() {
 
     console.log(`\ud83e\udd16 Installed ${geminiFile} (marker ${geminiMarker}${geminiVersion}])`);
     if (hadUnmanaged) {
-      console.log("  \u26a0\ufe0f  Your previous ~/.gemini/GEMINI.md was replaced (saved as *.vibedev-rules-backup-*).");
+      console.log("  \u26a0\ufe0f  Your previous vibedev-profile GEMINI.md was replaced (saved as *.vibedev-rules-backup-*).");
       console.log(`      Move any machine-local lines from that backup into ${geminiLocal}.`);
     }
 
@@ -964,7 +1024,7 @@ async function runInstall() {
     syncVibeSoftSkills(GEMINI_SKILLS_DIR);
     syncVibeSoftSkills(join(INSTALL_ROOT, "agskills"));
     updateSkillsJson();
-    console.log(`\ud83d\udca1 Deployed skills to ${GEMINI_SKILLS_DIR} & updated ~/.gemini/config/skills.json`);
+    console.log(`\ud83d\udca1 Deployed skills to ${GEMINI_SKILLS_DIR} & updated ${join(GEMINI_DIR, "config", "skills.json")}`);
     console.log("  \u2139\ufe0f  Antigravity discovers rules and skills at startup \u2014 restart the app or start a new agy session.");
   }
 
@@ -978,6 +1038,9 @@ async function runInstall() {
 
   // --- 11. Antigravity permissions ---
   mergeAntigravityPermissions();
+
+  // --- 12. Launchers (isolated-profile entry points) ---
+  writeLaunchers();
 
   printSummary();
 }
