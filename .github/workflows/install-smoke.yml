@@ -42,11 +42,11 @@ jobs:
             join(home, ".vibedev", "rules", "RULE-agent-behavior.md"),
             join(home, ".vibedev", "rules", "RULE-coding.md"),
             join(home, ".vibedev", "rules", ".source-repo"),
-            join(home, ".claude", "CLAUDE.md"),
-            join(home, ".claude", "skills", "vibeflow", "SKILL.md"),
-            join(home, ".claude", "agents", "vibe-conduct.md"),
-            join(home, ".claude", "hooks", "vibe-update-check.mjs"),
-            join(home, ".claude", "hooks", "vibe_version_check.mjs"),
+            join(home, ".vibedev", "profiles", "claude", "CLAUDE.md"),
+            join(home, ".vibedev", "profiles", "claude", "skills", "vibeflow", "SKILL.md"),
+            join(home, ".vibedev", "profiles", "claude", "agents", "vibe-conduct.md"),
+            join(home, ".vibedev", "profiles", "claude", "hooks", "vibe-update-check.mjs"),
+            join(home, ".vibedev", "profiles", "claude", "hooks", "vibe_version_check.mjs"),
           ];
           const missing = mustExist.filter((p) => !existsSync(p));
           if (missing.length) {
@@ -62,7 +62,7 @@ jobs:
               else if (n.endsWith(".md") && readFileSync(p).includes("\r\n")) crlf.push(p);
             }
           };
-          for (const root of [join(home, ".vibedev", "rules"), join(home, ".claude", "skills")]) walk(root);
+          for (const root of [join(home, ".vibedev", "rules"), join(home, ".vibedev", "profiles", "claude", "skills")]) walk(root);
           if (crlf.length) {
             console.log("CRLF found in installed files on " + process.platform + ":\n  " + crlf.slice(0, 20).join("\n  "));
             process.exit(1);

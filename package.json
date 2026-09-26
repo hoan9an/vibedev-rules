@@ -1,6 +1,6 @@
 {
   "name": "vibedev-rules",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "VibeSoft's shared rule corpus + Agent Skills for Claude Code, Gemini/Antigravity, Codex and Grok — install and update with one command.",
   "keywords": [
     "claude-code",
