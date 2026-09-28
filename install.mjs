@@ -364,6 +364,12 @@ const AG_RULE_MAP = [
     "Repo-wide subtraction sweep asking what no longer needs to exist, terminating on two consecutive rounds with no new findings, with Chesterton's Fence as the brake before any removal is called certain. Load when the request is to minimize or strip an existing codebase rather than to check it is correct.",
     "",
   ],
+  [
+    "METHOD-audit-frozen-reference.md",
+    "model_decision",
+    "Audit whether a target literally conforms to a concrete external artifact a rule or project doc names as the canonical/frozen shape (a pinned version, a byte-identical component, a frozen layout). Load when a project's CLAUDE.md names a concrete external reference and the user asks whether the target actually matches it.",
+    "",
+  ],
 ];
 
 function agDestName(ruleFile) {

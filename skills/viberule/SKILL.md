@@ -121,6 +121,11 @@ Load if message contains any of:
 - **Keywords:** `subtraction audit`, `dead code`, `unused`, `unreferenced`, `bloat`, `strip down`, `minimize the repo`, `tối giản tuyệt đối`, `tối giản tối đa`, `tinh gọn toàn bộ`, `cắt giảm tối đa`, `dọn sạch repo`, `xoá code thừa`, `code chết`, `refactor hạng nặng`, `không còn gì để bớt`, `gọn nhất có thể`
 - **Context:** a request to minimize or strip an existing repository rather than to check its correctness. Pairs with `METHOD-audit-zero-trust.md`, whose scope-lock, detector-first order and evidence classes it inherits. Read-only: it reports and plans removals, it never deletes.
 
+### METHOD-audit-frozen-reference.md
+Load if message contains any of:
+- **Keywords:** `frozen reference`, `reference implementation`, `conform to`, `match the reference`, `canonical shape`, `pinned version`, `byte-identical`, `đối chiếu chuẩn`, `so với bản mẫu`, `khớp với reference`, `theo đúng bản gốc`, `kiểm tra tuân thủ`
+- **Context:** a rule or project doc names one or more concrete implementations as the canonical/frozen shape another project must match structurally, and the user asks whether the target actually conforms. Inherits `METHOD-audit-zero-trust.md`'s evidence discipline; diffs against the reference bytes, never memory. Read-only.
+
 ---
 
 ## Tier 2 — Full load
