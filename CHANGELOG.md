@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Added
+- **Upstream integration batch (from upstream rules corpus 3.1.0→3.5.0), adapted to VibeSoft's brand + isolated-profile model.** High-value, non-personal improvements ported; author-machine specifics (ecosystem site names, old-brand paths, Kiro, multi-`~/.claude*` discovery) deliberately left out.
+  - **`release` hardened** (`B1-11`): `B5` migration doctrine (detect-by-effect diff detector, expand→migrate→deploy→contract order, rehearse-from-previous-state, postconditions+rollback); `B6` release-copy contract (Headline/Short/Full + announce verdict, headline selection protocol); `B7` fail-closed pre-ship gate (per-step `S<n>` receipts, build+test step, self-interrogation); `B10` post-push CI watch (any flow, not only `/vibeship`); `B11` post-deploy functional verification (exercise a real data path, a constant-`ok` health endpoint is a false instrument); `C1` one canonical CHANGELOG shape; `C2` `highlight` tier; `C4` sync-check is the script.
+  - **`agent.A3`** gains a fourth kill-test **Self-sufficiency** (a question the rule corpus / deep-think budget / verbatim request already answers is amnesia, not an unknown); **`agent.B3`** names the exact destructive git commands (`stash`/`checkout`/`restore`/`reset --hard`/`clean`/`push --force`/`branch -D`) and paid-credit/quota spend as ask-before, and defines "hard-to-reverse" as no-backup-path.
+  - **`coding.B3`** reclassifies full build+test as self-authorized gated by moment (edit→typecheck, batch→build, ship→full suite) and bans moving uncommitted work to attribute a failing check; **`coding.C1`** judges "obvious/impossible" against the project's pinned facts, not imagination.
+  - **`docs.A5`** admission bar for the auto-loaded instruction file (five tests per line); **`docs.A6`** fact docs (`docs/ref/fact-*.md`) held by evidence, with `docs.C3` and the topic-folder line updated.
+  - **`METHOD-audit-frozen-reference.md`** — new audit method for a clause naming a concrete external artifact as the canonical shape (diff the reference bytes, never memory). Registered in `payload/index.md`, `viberule/SKILL.md`, and `install.mjs`'s `AG_RULE_MAP`.
+  - **`vibeopen`** — new session-opening brief skill: reports only what is still pending in a project, read-only, fixed four-field shape. Adapted from an upstream session-brief skill (dropped its notes-file surface, which this corpus does not ship).
+  - **`skills/vibeflow/scripts/release_lint.py`** — mechanical CHANGELOG-shape + `releases.json`-parity/highlight lint (`[ORDER]`/`[SECTION]`/`[LEVEL]`/`[PARITY]`/`[TYPE]` fail, `[HILITE]` review), same grammar and exit codes as `scythe.py`.
+
+### Removed
+- **Dead `.sh` transitional wrappers** in `skills/vibeflow/scripts/` (`council-*.sh`, `scythe.sh`) — the `.py` files are the cross-platform SSOT and no live reference names the wrappers; upstream dropped them in 3.4.0.
+
 ## [4.0.0] - 2026-09-26
 
 ### Changed

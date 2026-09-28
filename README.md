@@ -53,10 +53,10 @@ and only used to *run* the `vibeflow` helper scripts at runtime — never to ins
 
 ## What's in the box
 
-- **12 `RULE-*` + 6 `METHOD-*`** — the rule corpus: coding, docs, release, UI, database,
+- **12 `RULE-*` + 7 `METHOD-*`** — the rule corpus: coding, docs, release, UI, database,
   stacks, plus reusable reasoning methods (deep-think, proportionality, audit flows).
-- **9 skills** — `viberule`, `vibeflow`, `vibethink`, `vibehtmlreport`, `vibehelp`,
-  `vibegitcommit`, `vibelint`, `vibeship`, `vibe-article-writer`.
+- **10 skills** — `viberule`, `vibeflow`, `vibethink`, `vibehtmlreport`, `vibehelp`,
+  `vibegitcommit`, `vibelint`, `vibeship`, `vibe-article-writer`, `vibeopen`.
 - **5 agent definitions** — `vibe-hands`, `vibe-judge`, `vibe-conduct`, `vibe-challenger`,
   `vibe-maker`.
 - **Gemini / Antigravity overrides and settings fragments** for the CLIs that need them.
@@ -71,7 +71,7 @@ Installs into **isolated profiles** under `~/.vibedev/`, so your real `~/.claude
 | # | Target | What arrives |
 |---|--------|--------------|
 | 1 | `~/.vibedev/rules/` | The shared corpus (`payload/*`) plus `.source-repo` / `.version` stamp files — the one dir every consumer reads |
-| 2 | `~/.vibedev/profiles/claude/` | Isolated Claude profile: `CLAUDE.md`, 9 skills, 5 agents, `settings.json` merges, 2 SessionStart hooks. Launch with `vibe-claude` (sets `CLAUDE_CONFIG_DIR`). |
+| 2 | `~/.vibedev/profiles/claude/` | Isolated Claude profile: `CLAUDE.md`, 10 skills, 5 agents, `settings.json` merges, 2 SessionStart hooks. Launch with `vibe-claude` (sets `CLAUDE_CONFIG_DIR`). |
 | 3 | `~/.vibedev/profiles/codex/`, `~/.vibedev/profiles/grok/` | Isolated Codex/Grok profiles — the shared skill corpus under each profile's `skills/`. Launch with `vibe-codex` / `vibe-grok` (set `CODEX_HOME` / `GROK_HOME`). |
 | 4 | `~/.vibedev/profiles/gemini/.gemini/` | Staged Gemini/Antigravity profile — `GEMINI.md` overrides, native rule files, skills, `skills.json`. Gemini has no config-dir env var, so run `vibe-gemini-init` inside a project to scaffold its `.gemini/`. |
 
@@ -125,7 +125,7 @@ them updates both repos together — are the contract in
 
 ```text
 payload/          rule corpus (RULE-*.md, METHOD-*.md, index.md, GEMINI.md template)
-skills/           shared Agent Skills (SKILL.md open standard) — 9 skills
+skills/           shared Agent Skills (SKILL.md open standard) — 10 skills
 claude/           Claude Code runtime assets (CLAUDE.md template, agents/, hooks/, fragment)
 scripts/          repo-only tooling (version sync, brand guard, bias suite) — never installed
 docs/             architecture, decision records, research, and references
@@ -144,9 +144,9 @@ documented in `payload/index.md`.
 ```bash
 rm -rf ~/.vibedev/rules
 rm -rf ~/.vibedev/agent-council
-rm -rf ~/.claude/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer}
-rm -rf ~/.agents/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer}   # Codex CLI
-rm -rf ~/.grok/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer}     # Grok CLI
+rm -rf ~/.claude/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer,vibeopen}
+rm -rf ~/.agents/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer,vibeopen}   # Codex CLI
+rm -rf ~/.grok/skills/{viberule,vibeflow,vibethink,vibehtmlreport,vibehelp,vibegitcommit,vibelint,vibeship,vibe-article-writer,vibeopen}     # Grok CLI
 rm -f  ~/.claude/agents/vibe-{hands,judge,conduct,challenger,maker}.md
 rm -f  ~/.gemini/GEMINI.md
 ```
