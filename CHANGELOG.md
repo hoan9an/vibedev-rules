@@ -22,6 +22,7 @@
 - **`RULE-coding.md` `B3` and `B5` merged into one section** — what counts as verification and the six-rung ladder that decides who performs it were one topic written twice. The address `coding.B5` is retired; every live citation repointed to `coding.B3` (`index.md`, `agent.B3`, `release`, `vibeopen`).
 - **`RULE-seo.md`** gains `A6` (URL form — relative at rest, absolute only at emission) and drops the unsourced Vietnamese-keyword rule; `stack.A2` names `site.url` via `useSiteConfig()` as the single origin source.
 - **`agent.B6` Precedence** moves from `index.md` into the behavior floor; `agent.A2` states the cost unit as round trips; `agent.A3`'s self-sufficiency kill-test trimmed to its siblings' length.
+- **`scripts/check-brand.mjs` extended** — it now also fails on pre-rebrand brand tokens (the upstream author's handle and repo name, and every token of the old brand family) in files *and* in every commit message reachable from `HEAD`, not only on the corrupted `[a-z]vibe[a-z]` shape; a line that must keep a legacy literal carries an inline `brand-guard-ignore` marker. Governed by `CLAUDE.md` § "Porting from an upstream corpus".
 
 ### Removed
 - **Dead `.sh` transitional wrappers** in `skills/vibeflow/scripts/` (`council-*.sh`, `scythe.sh`) — the `.py` files are the cross-platform SSOT and no live reference names the wrappers; upstream dropped them in 3.4.0.

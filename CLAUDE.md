@@ -69,6 +69,22 @@ A ready-to-paste prompt template (e.g. in `payload/GEMINI.md`) must not hardcode
 Vietnamese output — tell the agent to compose in the session's current language rather than
 shipping a fixed-language example.
 
+## Porting from an upstream corpus
+
+When a change is synced or ported from another rules repository, **the upstream's identity is
+stripped, never carried.** Forbidden in commit messages, `CHANGELOG.md`, and every shipped or
+repo file: the upstream author's name or handle, the upstream repository's name, and every
+token of the pre-rebrand brand family (`aki`, `akidevrule`, `akinet`, `~/.aki`, the rest of the `aki*` set). <!-- brand-guard-ignore: this line names the tokens the rule forbids -->
+Describe a ported change by what it does, never by where it came from.
+
+- **Provenance that must survive** (a `ref/fact-*` source trail, a research citation) names the
+  source the fact came from — a vendor page, a spec, an artifact — never the intermediate rules
+  repo it was copied through.
+- **Run `node scripts/check-brand.mjs` before the first push, not after.** It fails on old-brand
+  tokens in files *and* in every commit message reachable from `HEAD`. A commit message is not
+  scrubbed by a later commit, so the only fixes are rewriting it or catching it pre-push; an
+  intentional legacy literal needs an inline `brand-guard-ignore` marker with a reason.
+
 ## Before you edit
 
 - **vibedev-bridge is a downstream consumer.** Renaming or reformatting `~/.vibedev/rules/.version` (the `version=` line), renaming the `master` branch, moving the install root, dropping the `@import` layout, or renaming the tool breaks it — change `vibedev-bridge` in the same commit. Contract: `docs/arch/vibedev-bridge-integration.md`.
