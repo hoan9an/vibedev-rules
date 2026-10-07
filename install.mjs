@@ -473,6 +473,26 @@ function mergeSettings(settingsPath, installRoot, claudeDir) {
     ],
   });
 
+  if (!Array.isArray(hooks.PreToolUse)) hooks.PreToolUse = [];
+  const isVibeRouteGuard = (entry) => {
+    try {
+      return (entry.hooks || []).some((h) => (h.command || "").includes("vibe-route-guard"));
+    } catch {
+      return false;
+    }
+  };
+  hooks.PreToolUse = hooks.PreToolUse.filter((e) => !isVibeRouteGuard(e));
+  hooks.PreToolUse.push({
+    matcher: "Edit|MultiEdit|Write|NotebookEdit",
+    hooks: [
+      {
+        type: "command",
+        command: `node "${join(claudeDir, "hooks", "vibe-route-guard.mjs")}"`,
+        timeout: 10,
+      },
+    ],
+  });
+
   writeTextLf(settingsPath, JSON.stringify(data, null, 2) + "\n");
 }
 
@@ -829,6 +849,7 @@ function printSummary() {
 
   console.log();
   console.log(cyanBold("Hooks deployed:"));
+  console.log("  \ud83d\udea7 vibe-route-guard (PreToolUse on Edit|MultiEdit|Write|NotebookEdit) \u2014 denies the first edit of an artifact type until its routed rule was Read; VIBE_ROUTE_GUARD=0 disables");
   console.log("  \ud83d\udce2 vibe-update-check (SessionStart, notify-only) \u2014 notifies when a new rule version is available");
 
   console.log(`\n${greenBold("==============================")}`);
@@ -898,8 +919,8 @@ async function runInstall() {
 
   copyFileSync(join(REPO_ROOT, "CHANGELOG.md"), join(INSTALL_ROOT, "CHANGELOG.md"));
 
-  const tccSrc = join(REPO_ROOT, "docs", "ref", "macos-codesign-tcc.md");
-  const tccDest = join(INSTALL_ROOT, "docs", "ref", "macos-codesign-tcc.md");
+  const tccSrc = join(REPO_ROOT, "docs", "ref", "fact-macos-codesign-tcc.md");
+  const tccDest = join(INSTALL_ROOT, "docs", "ref", "fact-macos-codesign-tcc.md");
   rmrf(join(INSTALL_ROOT, "docs"));
   mkdirSync(dirname(tccDest), { recursive: true });
   copyFileSync(tccSrc, tccDest);
@@ -931,6 +952,7 @@ async function runInstall() {
   mkdirSync(hooksDest, { recursive: true });
   copyFileSync(join(REPO_ROOT, "claude", "hooks", "vibe-update-check.mjs"), join(hooksDest, "vibe-update-check.mjs"));
   copyFileSync(join(REPO_ROOT, "claude", "hooks", "vibe_version_check.mjs"), join(hooksDest, "vibe_version_check.mjs"));
+  copyFileSync(join(REPO_ROOT, "claude", "hooks", "vibe-route-guard.mjs"), join(hooksDest, "vibe-route-guard.mjs"));
   // Remove orphaned hooks left by an earlier install (pre-3.0 Python).
   for (const legacy of ["vibe-update-check.py", "vibe_version_check.py"]) {
     const p = join(hooksDest, legacy);

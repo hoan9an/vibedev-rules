@@ -1,6 +1,6 @@
 ---
 name: viberule
-description: VibeSoft's contextual rule router — invoke BEFORE acting whenever the task touches any of - .md/.vue/.css/.tsx/.rs/.sql files; docs, plan, README, CHANGELOG; UI, component, CSS, tailwind; SEO, schema, sitemap; release, version, commit, push, deploy; DB schema, migration; Tauri; i18n, UI copy; pricing, biz; UX review; refactor, flow tracing; audit or minimize sweeps; big decisions (should we / có nên). Full corpus load on "nạp full". Core rules are not routed here — the harness embeds them via CLAUDE.md.
+description: VibeSoft's contextual rule router — invoke BEFORE acting whenever the task touches any of - .md/.vue/.css/.tsx/.rs/.sql files; docs, plan, README, CHANGELOG; UI, component, CSS, tailwind; SEO, schema, sitemap; release, version, commit, push, deploy; DB schema, migration; Tauri; i18n, UI copy; pricing, biz; UX review; refactor, flow tracing; audit or minimize sweeps; big decisions (should we / có nên). Full corpus load on "nạp full". Code and pattern rules route here and are gated by the route-guard hook on [CC]; the behavior floor and corpus map are embedded by the harness.
 user-invocable: false
 ---
 
@@ -8,9 +8,9 @@ user-invocable: false
 
 **Nothing in this file is guaranteed to run.** A skill loads only when the model chooses to invoke it, so every rule routed below is best-effort.
 
-The rules that must apply unconditionally are not here. `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-pattern-core.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
+The rules that must apply unconditionally are not here. `index.md` and `RULE-agent-behavior.md` are embedded by the harness through `@` imports in the profile `CLAUDE.md` (`~/.vibedev/profiles/claude/CLAUDE.md`), which is read mechanically at session start. Do not move them into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
 
-The last two used to be routed here as "default ON" Tier 1 entries. That phrasing promised a guarantee the mechanism could not deliver — a file routed by a skill loads only if the model first decides to invoke the skill — and the observed failure was not the rules being read and ignored but never being read at all. Do not re-add them below: they are already in context on every turn, so a signal block for them would only produce a redundant `Read`.
+`RULE-coding.md` and `RULE-pattern-core.md` are **routed here** (below), not embedded. They were `@` imports once, because being labelled "default ON" here promised a guarantee the mechanism could not deliver — a file routed by a skill loads only if the model first decides to invoke the skill, and the observed failure was not the rules being read and ignored but never being read at all. That guarantee now comes from a mechanism instead of an import: on [CC] the `vibe-route-guard` PreToolUse hook denies the first code edit of a session until both files were read, so the route cannot be skipped; on harnesses with no hook surface, this route row is the entry point, best-effort by construction.
 
 ## Addressing scheme (recall only — does not affect routing)
 
@@ -28,8 +28,11 @@ Skip the Read if that file was already loaded earlier in this conversation — a
 
 **A file extension alone is a sufficient signal.** Touching a `.md` loads `RULE-docs.md`; a `.vue`/`.css` loads `RULE-ui-pattern.md`; `.rs`/`Cargo.toml` loads `RULE-stack-tauri.md`; `.sql`/`migrations/` loads `RULE-db-design.md`. The project does **not** need a matching folder structure, a `docs/` tree, or an existing design system first — match on what is being touched, not on how mature the project is. The keyword and action lists below are additional entry points, never a required second condition.
 
-### RULE-coding.md · RULE-pattern-core.md — not routed, already loaded
-Both are core `@` imports (see the section above) and are in context on every turn without this skill running. Nothing to match, nothing to `Read`, and they never appear in a load-confirmation line.
+### RULE-coding.md · RULE-pattern-core.md
+Both load on any code turn. On [CC] the `vibe-route-guard` hook enforces the read: the first Edit/Write of a code file in a session is denied until both were read, so this route cannot be skipped there. On harnesses with no hook surface, match on the signals below.
+- **Keywords:** `code`, `implement`, `refactor`, `fix`, `bug`, `function`, `class`, `module`, `API`, `script`, `query`, `type`, `test`, `review`, `error handling`, `security`, `decomposition`, `abstraction`, `DRY`, `viết code`, `sửa code`, `tối ưu`, `xử lý lỗi`, `cấu trúc`
+- **Paths:** any code extension (`*.ts`, `*.tsx`, `*.js`, `*.jsx`, `*.vue`, `*.py`, `*.rs`, `*.go`, `*.sql`, `*.sh`, …) or a config/script file — the route guard's `CODE_EXT` set is the artifact signature
+- **Actions:** writing, changing, reviewing or refactoring code; any structural or decomposition decision
 
 ### RULE-docs.md
 Load if message or file path contains any of:
@@ -144,13 +147,13 @@ Load if message contains any of:
 One line at the start of the response, reporting the **whole rule context**, not this skill's delta:
 
 ```
-[RULES] agent,coding,pattern (core) + docs,ui (router) | missing: none
+[RULES] agent (core) + coding,pattern,docs,ui (router) | missing: none
 ```
 
 | Element | Rule |
 |---|---|
 | Names | topic addresses per the manifest Topic column (`~/.vibedev/rules/index.md` § addressing scheme). No new vocabulary. |
-| `(core)` | the four `@`-imported files. Always listed, even though this skill did not load them: their presence is otherwise unobservable, and they are the most-violated group. Listing them reports context state; it does not claim credit for the load. |
+| `(core)` | the two `@`-imported files (`index.md`, `RULE-agent-behavior.md`). Always listed, even though this skill did not load them: their presence is otherwise unobservable. Listing them reports context state; it does not claim credit for the load. |
 | `(router)` | files this skill loaded this turn. Tier 2 writes `(router:full)`. |
 | `(brief)` | for a worker/subagent — the files its spawning prompt named and it actually read. A worker inherits no router, so it uses this instead of `(router)` and emits the line as the first line of its single round (`agent.A5`). |
 | `missing:` | every file that was required and could not be read, else `none`. `[RULES] none \| missing: agent` is the loudest case and the reason this field exists. |

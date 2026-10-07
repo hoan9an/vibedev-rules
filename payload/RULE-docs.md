@@ -33,9 +33,9 @@ Filenames across all `docs/*` never lead with a date — the content-identifying
 - All `arch/`, `feat/`, and `plan/` docs that touch product direction or money must reference it.
 - When code intent and a `biz/` doc disagree, the `biz/` doc wins — reconcile or escalate.
 
-### A4. Anchor stamp — `updated <time> <version>` on every `arch|biz|feat` doc
+### A4. Anchor stamp — `updated <time> <version>` on every `arch|biz|feat` doc and every `ref/fact-*`
 
-`arch/`, `biz/` and `feat/` hold current state and are the SSoT other docs and code are written against, so a reader cannot tell a still-true doc from a silently rotted one without knowing when it was last confirmed. These three folders carry a stamp; `plan/`, `research/` and `ref/` do not — the first two are event records whose own schema already dates them (B1, B2), and `ref/` is verified by running its commands, not by a date.
+`arch/`, `biz/` and `feat/` hold current state and are the SSoT other docs and code are written against, so a reader cannot tell a still-true doc from a silently rotted one without knowing when it was last confirmed. These three folders carry a stamp, and so does every `ref/fact-*` doc (A6): a fact is confirmed by reading a source on a date, and the outside world moves without touching this repo. `plan/`, `research/` and the rest of `ref/` do not — the first two are event records whose own schema already dates them (B1, B2), and a command lookup is verified by running it, not by a date.
 
 **Placement** — first line of the file's own header block: immediately under the H1 for a plain Markdown doc, or as a `updated:` key in the frontmatter/description field where the file already has one. One stamp per file, never per section.
 

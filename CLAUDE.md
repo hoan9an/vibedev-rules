@@ -17,7 +17,7 @@ or copied from here: edit here first, then let the installer propagate.
 
 Two things worth remembering:
 
-- **`docs/` is never installed, with one exception:** `docs/ref/macos-codesign-tcc.md` — a
+- **`docs/` is never installed, with one exception:** `docs/ref/fact-macos-codesign-tcc.md` — a
   lookup with no `RULE-`/`METHOD-` shape — is deployed by `install.mjs` to
   `~/.vibedev/rules/docs/ref/`.
 - **`claude/agents/*.md` stays under `claude/`, not a vendor-neutral top-level folder,**

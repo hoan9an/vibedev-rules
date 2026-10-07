@@ -11,9 +11,23 @@
   - **`METHOD-audit-frozen-reference.md`** — new audit method for a clause naming a concrete external artifact as the canonical shape (diff the reference bytes, never memory). Registered in `payload/index.md`, `viberule/SKILL.md`, and `install.mjs`'s `AG_RULE_MAP`.
   - **`vibeopen`** — new session-opening brief skill: reports only what is still pending in a project, read-only, fixed four-field shape. Adapted from an upstream session-brief skill (dropped its notes-file surface, which this corpus does not ship).
   - **`skills/vibeflow/scripts/release_lint.py`** — mechanical CHANGELOG-shape + `releases.json`-parity/highlight lint (`[ORDER]`/`[SECTION]`/`[LEVEL]`/`[PARITY]`/`[TYPE]` fail, `[HILITE]` review), same grammar and exit codes as `scythe.py`.
+- **Upstream integration batch 2 (from upstream rules corpus 3.5.0→3.6.0), brand-adapted.** The coherent subset ported; the manifest-removal refactor was deliberately not taken (see Changed).
+  - **`claude/hooks/vibe-route-guard.mjs`** — a `PreToolUse` route gate that enforces the router's second hop by mechanism on [CC]: on `Edit|MultiEdit|Write|NotebookEdit` it maps the edited path to rule files and denies the edit until each was read in the session's own transcript (a subagent is gated on the subagent's transcript). Fail-open — any error, an unreadable transcript, or three denials for one file lets the edit through; `VIBE_ROUTE_GUARD=0` disables it; the corpus under `~/.vibedev/`, the config dir, `/tmp/`, any `scratchpad/` path and any path outside the session `cwd` are never gated. Registered by `install.mjs`, [CC]-only.
+  - **`pattern.A9` — Draft, then commit once** (the 9th law): anything still being explored lives in a draft owned by the unit showing it, and the record changes once at an explicit commit event; cancel discards the draft. Plus a `ui` map bullet (grep: no store setter, `localStorage`, IPC or fetch inside a `dragenter`/`dragover`/`pointermove`/`input` handler).
+  - **`docs.A4`** now also stamps every `ref/fact-*` doc; the four `docs/ref/*.md` lookups are renamed `fact-*.md` and each carries a Trail line (source + read date + research origin).
+  - **`agent.C3`** fences copy-verbatim artifacts (prompt, template, file body, command block) with four backticks, never three.
+
+### Changed
+- **`RULE-coding.md` and `RULE-pattern-core.md` leave the `@` imports — two resident files (`index.md`, `RULE-agent-behavior.md`) instead of four.** The guarantee the imports gave is restored by the route guard where it applies (a code turn) and dropped where it never did (a session that touches no code); on harnesses with no hook surface the router's new route rows carry them. `viberule/SKILL.md`, `claude/CLAUDE.md`, `payload/index.md`, `README.md` and the receipt's `(core)` set updated together. The manifest is **kept** (not deleted as upstream did): this fork's router is a verbose keyword file, so importing it in the manifest's place would cost more than it saves.
+- **`RULE-coding.md` `B3` and `B5` merged into one section** — what counts as verification and the six-rung ladder that decides who performs it were one topic written twice. The address `coding.B5` is retired; every live citation repointed to `coding.B3` (`index.md`, `agent.B3`, `release`, `vibeopen`).
+- **`RULE-seo.md`** gains `A6` (URL form — relative at rest, absolute only at emission) and drops the unsourced Vietnamese-keyword rule; `stack.A2` names `site.url` via `useSiteConfig()` as the single origin source.
+- **`agent.B6` Precedence** moves from `index.md` into the behavior floor; `agent.A2` states the cost unit as round trips; `agent.A3`'s self-sufficiency kill-test trimmed to its siblings' length.
 
 ### Removed
 - **Dead `.sh` transitional wrappers** in `skills/vibeflow/scripts/` (`council-*.sh`, `scythe.sh`) — the `.py` files are the cross-platform SSOT and no live reference names the wrappers; upstream dropped them in 3.4.0.
+
+### Fixed
+- **`release_lint.py --latest` false-positive `[PARITY]`** on every project with an open `[Unreleased]` block: the reverse `releases.json → CHANGELOG` check tested membership against the `--latest`-truncated version list, which can never contain the last shipped version while `[Unreleased]` is on top. The reverse check now tests against the full, untruncated list; the forward check and the `--latest` item-count scoping are unchanged.
 
 ## [4.0.0] - 2026-09-26
 

@@ -1,6 +1,8 @@
 # Local macOS codesign and TCC
 
-The one vibedev-rules lookup for this chain. `tauri.B7` is the concise rule (do not delete it); the installer (`install.mjs`) deploys this file to `~/.vibedev/rules/docs/ref/macos-codesign-tcc.md`. Evidence trail: `docs/research/macos-tcc-tauri-boundary-aug21.md`.
+`updated 2026-10-07 · v4.0.0`
+
+The one vibedev-rules lookup for this chain. `tauri.B7` is the concise rule (do not delete it); the installer (`install.mjs`) deploys this file to `~/.vibedev/rules/docs/ref/fact-macos-codesign-tcc.md`. Evidence trail: `docs/research/macos-tcc-tauri-boundary-aug21.md`.
 
 **Stable self-signed identity keeps TCC grants across rebuilds. Apple ad-hoc (`codesign --sign -`) does not.** Artifact names, install paths, and identity names live in that project’s own docs — not here.
 

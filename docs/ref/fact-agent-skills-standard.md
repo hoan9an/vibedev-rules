@@ -1,6 +1,10 @@
 # Agent Skills is a shared open standard — Claude Code ↔ Antigravity/AGY
 
-Not `AGENTS.md` (the repo instruction file). That standard: `docs/ref/agents-md-standard.md`.
+`updated 2026-10-07 · v4.0.0`
+
+Not `AGENTS.md` (the repo instruction file). That standard: `docs/ref/fact-agents-md-standard.md`.
+
+**Trail.** Verified against the vendors' own pages: the Agent Skills open standard (agentskills.io; YAML frontmatter `name`/`description`; a skill's body loads only when it is used; personal `~/.claude/skills/`, project `.claude/skills/`) and `antigravity.google/docs/skills` (required `SKILL.md`, `name` optional and defaulting to the folder, `description` required; the agent sees names and descriptions at session start and reads the full file on activation; workspace `.agents/skills/`, global `~/.gemini/config/skills/`). Carried from the upstream rules corpus, which read the vendor pages on 2026-09-30. Earlier trail: `../research/antigravity-claude-skills-native-discovery.md`.
 
 ## The fact
 

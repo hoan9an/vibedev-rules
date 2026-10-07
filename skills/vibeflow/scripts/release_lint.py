@@ -43,11 +43,10 @@ def _changelog_blocks(lines: list[str]) -> list[dict]:
     return blocks
 
 
-def lint_changelog(path: Path, latest: bool) -> tuple[list[str], list[str]]:
+def lint_changelog(path: Path, latest: bool) -> tuple[list[str], list[str], list[str]]:
     lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
-    blocks = _changelog_blocks(lines)
-    if latest:
-        blocks = blocks[:1]
+    all_blocks = _changelog_blocks(lines)
+    blocks = all_blocks[:1] if latest else all_blocks
     findings: list[str] = []
     for b in blocks:
         if b['version'] is None:
@@ -69,10 +68,10 @@ def lint_changelog(path: Path, latest: bool) -> tuple[list[str], list[str]]:
         if std != sorted(dict.fromkeys(std), key=SECTIONS.index) and len(set(std)) == len(std):
             expected = ', '.join(sorted(std, key=SECTIONS.index))
             findings.append(f"[ORDER] {path}:{b['line']} | {b['version']}: {', '.join(std)} — expected {expected}")
-    return findings, [b['version'].lstrip('v') for b in blocks if b['version']]
+    return findings, [b['version'].lstrip('v') for b in blocks if b['version']], [b['version'].lstrip('v') for b in all_blocks if b['version']]
 
 
-def lint_releases(path: Path, changelog_versions: list[str], latest: bool) -> list[str]:
+def lint_releases(path: Path, changelog_versions: list[str], all_changelog_versions: list[str], latest: bool) -> list[str]:
     findings: list[str] = []
     try:
         data = json.loads(path.read_text(encoding='utf-8'))
@@ -93,9 +92,10 @@ def lint_releases(path: Path, changelog_versions: list[str], latest: bool) -> li
     for v in [x for x in changelog_versions if x.lower() != 'unreleased']:
         if v not in json_versions:
             findings.append(f"[PARITY] {path}:1 | CHANGELOG version {v} has no releases.json entry")
+    # Reverse check needs the full history: with [Unreleased] on top, --latest's one block never holds the newest shipped version.
     for r, v in zip(items, json_versions):
         n = line_of(v)
-        if v not in changelog_versions:
+        if v not in all_changelog_versions:
             findings.append(f"[PARITY] {path}:{n} | releases.json version {v} has no CHANGELOG entry")
         changes = r.get('changes', [])
         for c in changes:
@@ -120,10 +120,10 @@ def lint_target(target: str, latest: bool) -> list[str]:
     if not changelog.is_file():
         print(f"release_lint: no CHANGELOG.md at {target}", file=sys.stderr)
         sys.exit(2)
-    findings, versions = lint_changelog(changelog, latest)
+    findings, versions, all_versions = lint_changelog(changelog, latest)
     releases = changelog.parent / 'app' / 'data' / 'releases.json'
     if releases.is_file():
-        findings.extend(lint_releases(releases, versions, latest))
+        findings.extend(lint_releases(releases, versions, all_versions, latest))
     return findings
 
 

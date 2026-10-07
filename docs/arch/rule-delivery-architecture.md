@@ -28,7 +28,7 @@ vibedev-rules/
     index.md, RULE-*.md, METHOD-*.md   → the rule corpus (Claude Code consumes this)
     GEMINI.md                          → Gemini/Antigravity global behavior overrides (NOT a rule file)
   skills/                              → shared Agent Skills corpus (SKILL.md open standard); deployed
-                                          unmodified to both agents, see docs/ref/agent-skills-standard.md
+                                          unmodified to both agents, see docs/ref/fact-agent-skills-standard.md
   claude/
     CLAUDE.md, hooks/                  → Claude Code-only runtime assets
     agents/                            → 5 agent definitions, deployed per file to ~/.claude/agents/

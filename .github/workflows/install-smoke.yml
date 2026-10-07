@@ -47,6 +47,7 @@ jobs:
             join(home, ".vibedev", "profiles", "claude", "agents", "vibe-conduct.md"),
             join(home, ".vibedev", "profiles", "claude", "hooks", "vibe-update-check.mjs"),
             join(home, ".vibedev", "profiles", "claude", "hooks", "vibe_version_check.mjs"),
+            join(home, ".vibedev", "profiles", "claude", "hooks", "vibe-route-guard.mjs"),
           ];
           const missing = mustExist.filter((p) => !existsSync(p));
           if (missing.length) {

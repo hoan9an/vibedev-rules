@@ -71,7 +71,7 @@ Installs into **isolated profiles** under `~/.vibedev/`, so your real `~/.claude
 | # | Target | What arrives |
 |---|--------|--------------|
 | 1 | `~/.vibedev/rules/` | The shared corpus (`payload/*`) plus `.source-repo` / `.version` stamp files — the one dir every consumer reads |
-| 2 | `~/.vibedev/profiles/claude/` | Isolated Claude profile: `CLAUDE.md`, 10 skills, 5 agents, `settings.json` merges, 2 SessionStart hooks. Launch with `vibe-claude` (sets `CLAUDE_CONFIG_DIR`). |
+| 2 | `~/.vibedev/profiles/claude/` | Isolated Claude profile: `CLAUDE.md`, 10 skills, 5 agents, `settings.json` merges, a SessionStart update-check hook and a PreToolUse route guard. Launch with `vibe-claude` (sets `CLAUDE_CONFIG_DIR`). |
 | 3 | `~/.vibedev/profiles/codex/`, `~/.vibedev/profiles/grok/` | Isolated Codex/Grok profiles — the shared skill corpus under each profile's `skills/`. Launch with `vibe-codex` / `vibe-grok` (set `CODEX_HOME` / `GROK_HOME`). |
 | 4 | `~/.vibedev/profiles/gemini/.gemini/` | Staged Gemini/Antigravity profile — `GEMINI.md` overrides, native rule files, skills, `skills.json`. Gemini has no config-dir env var, so run `vibe-gemini-init` inside a project to scaffold its `.gemini/`. |
 
@@ -85,9 +85,12 @@ managed names only; there is no blanket directory wipe.
 
 Two mechanisms, by design:
 
-- **Always-on core.** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and
-  `RULE-pattern-core.md` are `@`-imported by the installed `~/.vibedev/profiles/claude/CLAUDE.md`, so the
-  harness loads them mechanically at session start — no model decision involved.
+- **Always-on core.** `index.md` and `RULE-agent-behavior.md` are `@`-imported by the
+  installed `~/.vibedev/profiles/claude/CLAUDE.md`, so the harness loads them mechanically at
+  session start — no model decision involved.
+- **Enforced routing.** `RULE-coding.md` and `RULE-pattern-core.md` are routed rows; on [CC]
+  the `vibe-route-guard` PreToolUse hook denies the first code edit of a session until both
+  were read, so the guarantee the imports once gave is restored by a mechanism instead.
 - **On demand.** Everything else is pulled in by the `viberule` router only when a task's
   signals match, which keeps the always-resident context small.
 
@@ -99,6 +102,12 @@ Re-run the install command — nothing else is needed. A SessionStart hook check
 published version and prints a single-line notice; it never downloads, never auto-updates,
 and never blocks a session. Offline or unreachable upstreams degrade silently to `unknown`.
 The full state machine lives in the hook source under `claude/hooks/`.
+
+A second hook, `vibe-route-guard`, enforces the router's second hop on [CC]: on an
+`Edit`/`Write` it denies the first edit of an artifact type in a session until the rule files
+that path routes to were read, naming them in the deny reason. It is fail-open (any error, an
+unreadable transcript, or three denials for one file lets the edit through), so a detection
+bug can never lock a session; `VIBE_ROUTE_GUARD=0` disables it.
 
 ---
 

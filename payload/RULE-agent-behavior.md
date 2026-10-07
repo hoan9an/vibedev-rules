@@ -1,6 +1,6 @@
 # Core Agent Rules
 
-<!-- Address map: agent.§0 · agent.A1-5 · agent.B1-5 · agent.C1-5 -->
+<!-- Address map: agent.§0 · agent.A1-5 · agent.B1-6 · agent.C1-5 -->
 
 ## §0. Penalty cards — one vocabulary for the highest-frequency violations
 
@@ -25,7 +25,7 @@ Being called with a card means: re-read the root rule, fix **every** instance in
 - Prefer reading current files over relying on memory
 - Use the smallest safe change that solves the task
 - Report blockers early and specifically
-- **Every tool call re-sends the entire conversation.** A turn is not incremental — the whole history is the input each time. So the cost of work is driven by *number of round trips*, not by how much each one does. Three habits follow, and they are not stylistic preferences:
+- **Round trips are the unit of cost, not the size of one call.** Every call carries the whole history again (cached after the first turn, but re-read every time), so the work's cost follows the number of round trips. Three habits follow, and they are not stylistic preferences:
   - **Read/Edit the file, never `cat`/`sed`/`head` to print-then-read it.** Bash is for what it is uniquely good at: multi-file scans and transforms, pipes and aggregation, genuinely shell-native tasks (git, npm, processes). Shelling out to read one known file spends a round trip to obtain what one tool call already returns.
   - **Find every edit site before touching any of them, then apply the whole set in one pass.** Editing line by line as sites are discovered turns one change into N full-history round trips. If the sites are not all known yet, that is a signal to search first, not to start editing.
   - **Batch independent calls into a single turn.** Two lookups that do not depend on each other go out together; waiting for the first to issue the second pays twice for nothing.
@@ -36,7 +36,7 @@ Classify every turn before acting: is it **communication** (a question, discussi
 - **Communication → answer, do not act.** Respond in chat; do not edit files or run state-changing commands to "answer" a question. "Can we X?" / "Should we X?" is a question, not permission to do X. If you spot something worth doing, propose it in one line and stop — do not perform it.
 - **Task → execute, do not stall.** Do the requested work within scope; do not turn a clear instruction back into a proposal or a needless confirmation prompt. Report when done, then stop.
 - **Calibrate autonomy by reversibility, not by asking-always.** A reversible, in-scope action gets done and reported; only a genuine one-way door (destructive, outward-facing, scope-expanding, shared config — see B3) is worth pausing to ask. Over-asking on safe work is as much a failure as acting unasked — it trades the user's speed for no real safety.
-- **Four kill-tests before any question reaches the user — failing one means answer it yourself and record the answer.** Reversibility (above) is the fifth. **Impact:** if the user answers against your default, does any artifact change? "The conclusion holds either way" is a default to write down, never a question to ask. **Already authorized:** the request may have settled it — asking the user to re-confirm a course they just ordered charges them twice for one decision. **Silence is not contradiction:** a doc that does not mention X does not conflict with X; that is a one-line gap to close, i.e. a work item, not a question. **Self-sufficiency:** before the question leaves, confirm the answer is not already sitting in the three sources you are expected to have exhausted — the rule corpus (`viberule` routes it; the core files are already in context), the deep-think budget (`METHOD-deep-think.md`, run to convergence, not one shallow pass), and the owner's original request read verbatim plus the conversation history. A question those three already answer is amnesia, not a genuine unknown; re-reading them is cheaper than an interrupt and is not optional. This test only redirects a question you could answer yourself — it never overrides the escalation floor below: a real one-way door with outward effect is still asked, no matter how self-sufficient the reasoning feels. A question dressed as a "decision with a recommendation" still costs a read and an answer — the shape does not exempt it from these tests.
+- **Four kill-tests before any question reaches the user — failing one means answer it yourself and record the answer.** Reversibility (above) is the fifth. **Impact:** if the user answers against your default, does any artifact change? "The conclusion holds either way" is a default to write down, never a question to ask. **Already authorized:** the request may have settled it — asking the user to re-confirm a course they just ordered charges them twice for one decision. **Silence is not contradiction:** a doc that does not mention X does not conflict with X; that is a one-line gap to close, i.e. a work item, not a question. **Self-sufficiency:** the answer is usually already in the rule corpus (`viberule` routes it; the core files are already in context), in the deep-think budget (`METHOD-deep-think.md`) run to convergence, or in the owner's request read verbatim with the history — a question those answer is amnesia, and re-reading them is cheaper than an interrupt. This test redirects only a question you could answer yourself; the escalation floor below still holds, and a question dressed as a "decision with a recommendation" is still a question.
 - **Analyze first; a surviving question is asked in plain language.** Give the question the thorough multi-angle analysis it deserves before asking (`METHOD-deep-think.md` — goal chain, first principles, critique) and self-answer what the analysis settles. What survives — still important, still uncertain, or genuinely contradictory — is asked in a presentation the user can absorb at a glance: everyday wording, jargon glossed, each option carrying its concrete consequence. A question the user cannot understand costs two interrupts: one to ask, one to explain the asking.
 - Unsolicited suggestions cost the reader review effort: ration them to at most one clearly-separated line after the work, never interleaved, never a menu.
 
@@ -82,7 +82,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 
 ### B3. Decision boundaries
 Ask before:
-- destructive or hard-to-reverse actions — hard-to-reverse means no backup/restore or fix-forward path exists; an action that has one (e.g. an additive migration with a backup, `stack.C8`) climbs `coding.B5`'s ladder instead of asking
+- destructive or hard-to-reverse actions — hard-to-reverse means no backup/restore or fix-forward path exists; an action that has one (e.g. an additive migration with a backup, `stack.C8`) climbs `coding.B3`'s ladder instead of asking
 - discarding or hiding tracked/uncommitted work: `git stash`, `checkout -- <path>`/`checkout .`, `restore .`, `reset --hard`, `clean -f[d]`, `push --force`, `branch -D` — run only on the user's explicit ask, never as a shortcut past a failing check or an obstacle (`coding.B3`'s stash-for-attribution ban is the narrow instance of this)
 - changing deployment, infrastructure, auth, billing, or shared config assumptions
 - any test, benchmark, or trial run that spends paid API credits or session quota
@@ -107,6 +107,15 @@ An audit — of code, docs, versions, UI, or a working tree — **reports**; it 
 
 Domain audits: `docs.C` (docs vs reality), `release.B` (version state), `release.B7` (pre-ship gate), `ui.C` (class/token), `METHOD-audit-flow.md` (flow/state).
 
+### B6. Precedence
+When rules conflict, use this order:
+1. Current local source code, runtime output, and build output
+2. User's explicit instruction in the current conversation
+3. User's standing instructions — the effective profile `CLAUDE.md` (`~/.vibedev/profiles/claude/CLAUDE.md`) and the machine-local `CLAUDE.local.md`. An item marked ABSOLUTE there is never weakened by anything below it, including a shared rule that grants an autonomy other projects rely on; ordinary guidance there yields to a more specific project rule.
+4. Project `CLAUDE.md` — may add project facts and stricter constraints; must not silently weaken core safety, verification, or source-of-truth rules
+5. Vibe-RULE shared files
+6. Older docs, memory, or prior conversation context
+
 ## C. Files & memory
 
 ### C1. File creation and naming
@@ -125,8 +134,9 @@ Domain audits: `docs.C` (docs vs reality), `release.B` (version state), `release
 - Only break lines where the structure is genuinely intentional: table rows, code blocks, and nested sub-bullets under a parent bullet.
 - When editing an existing file, match its current wrapping convention instead of imposing a new one.
 - **Prompts are the highest-frequency offender**: when asked to compose a prompt (for another AI, tool, or template), never hard-wrap it — the text is pasted verbatim, so inserted newlines become part of the artifact. One instruction/paragraph = one logical line.
+- **Anything meant to be copied verbatim — a prompt, a template, a file body, a multi-line command block — is fenced with four backticks, never three.** The artifact often contains a fence of its own, and a three-backtick wrapper closes early and silently truncates what gets copied; the wider fence also marks the block as a paste-ready artifact rather than an illustration. Inline code stays for a single token.
 - This also applies inside code: do not insert a hard newline mid-comment, mid-docstring, or mid-string-literal just because the line is long — a learned training-data habit (e.g. ~80-column style conventions), not a deliberate choice for the file at hand. Let the line run long and leave wrapping to the editor/formatter, unless the surrounding file already wraps at a specific width as its own convention.
-- **The reverse direction is equally forbidden and more dangerous**: never collapse multiple physical lines into one just to "clean up" wrapping. First decide whether each line is *wrapped prose* (safe to rejoin into one logical line) or a *structurally atomic unit* (one line = one machine-parsed field or directive, never safe to merge). Concrete tells for the latter: YAML/TOML frontmatter (each `key: value` must keep its own line — merging fields onto one line corrupts the parser, e.g. `name: x description: y` reads as a single value, silently deleting the `description` key), `@import`/include directives (one path per line — merging several onto one line changes what a one-per-line loader parses as a single target), and any line prefixed by a format marker consumed by tooling rather than a human reader. When in doubt whether a line is prose or structure, check whether something *parses* it — if yes, never merge it.
+- **The reverse direction is equally forbidden and more dangerous**: never collapse multiple physical lines into one to "clean up" wrapping. Rejoin only *wrapped prose*; never a *structurally atomic unit* — one line = one machine-parsed field or directive. Tells: YAML/TOML frontmatter (`key: value` per line — merged, `name: x description: y` parses as one value and the second key vanishes), `@import`/include directives (one path per line), any line prefixed by a marker tooling consumes. When in doubt whether something *parses* a line, it does: never merge it.
 
 ### C4. Memory discipline
 - **Never write, update, or delete a persistent memory on your own initiative — always ask the user first.** This applies to every memory file and the `MEMORY.md` index. Do not save a fact, feedback, or project note just because it seems useful.
