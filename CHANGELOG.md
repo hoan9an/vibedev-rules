@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-07
+
 ### Added
 - **Upstream integration batch (from upstream rules corpus 3.1.0→3.5.0), adapted to VibeSoft's brand + isolated-profile model.** High-value, non-personal improvements ported; author-machine specifics (ecosystem site names, old-brand paths, Kiro, multi-`~/.claude*` discovery) deliberately left out.
   - **`release` hardened** (`B1-11`): `B5` migration doctrine (detect-by-effect diff detector, expand→migrate→deploy→contract order, rehearse-from-previous-state, postconditions+rollback); `B6` release-copy contract (Headline/Short/Full + announce verdict, headline selection protocol); `B7` fail-closed pre-ship gate (per-step `S<n>` receipts, build+test step, self-interrogation); `B10` post-push CI watch (any flow, not only `/vibeship`); `B11` post-deploy functional verification (exercise a real data path, a constant-`ok` health endpoint is a false instrument); `C1` one canonical CHANGELOG shape; `C2` `highlight` tier; `C4` sync-check is the script.
